@@ -3,14 +3,15 @@ package com.microrecetas.usuarios.controller;
 
 import com.microrecetas.usuarios.jwt.JWTAuthtenticationConfig;
 import com.microrecetas.usuarios.model.User;
+import com.microrecetas.usuarios.service.CustomUserDetailsService;
 import com.microrecetas.usuarios.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
@@ -23,10 +24,15 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    JWTAuthtenticationConfig jwtAuthtenticationConfig;
+    private CustomUserDetailsService userDetailsService;
 
     @Autowired
-    private AuthenticationManager authenticationManager; // Inyección del AuthenticationManager
+    JWTAuthtenticationConfig jwtAuthtenticationConfig;
+
+     @Autowired
+    private PasswordEncoder passwordEncoder;  // Añade esta línea
+
+   
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
@@ -35,15 +41,35 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<String> loginUser(
+            @RequestParam(required = true) String username,
+            @RequestParam(required = true) String password) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok("Login successful");
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            // Log para debugging
+            System.out.println("Login attempt for user: " + username);
+            
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            
+            // Log para debugging
+            System.out.println("User found in database");
+            
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+                System.out.println("Password doesn't match");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid credentials");
+            }
+
+            String token = jwtAuthtenticationConfig.getJWTToken(username);
+            return ResponseEntity.ok(token);
+            
+        } catch (UsernameNotFoundException e) {
+            System.out.println("User not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("User not found");
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred");
         }
     }
 
