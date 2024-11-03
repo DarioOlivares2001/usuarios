@@ -2,9 +2,14 @@
 package com.microrecetas.usuarios.controller;
 
 import com.microrecetas.usuarios.jwt.JWTAuthtenticationConfig;
+import com.microrecetas.usuarios.model.Receta;
 import com.microrecetas.usuarios.model.User;
 import com.microrecetas.usuarios.service.CustomUserDetailsService;
+import com.microrecetas.usuarios.service.RecetaService;
 import com.microrecetas.usuarios.service.UserService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +37,8 @@ public class UserController {
      @Autowired
     private PasswordEncoder passwordEncoder;  // Añade esta línea
 
-   
+   @Autowired
+    private RecetaService recetaService;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
@@ -84,5 +90,19 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
         }
+    }
+
+    // Endpoint público para obtener solo los nombres de las recetas
+    @GetMapping("/recetas/nombres")
+    public ResponseEntity<List<String>> getNombresRecetas() {
+        List<String> nombresRecetas = recetaService.obtenerNombresDeRecetas();
+        return ResponseEntity.ok(nombresRecetas);
+    }
+
+    // Nuevo endpoint público para insertar múltiples recetas
+    @PostMapping("/recetas/multiples")
+    public ResponseEntity<String> insertarMultiplesRecetas(@RequestBody List<Receta> recetas) {
+        recetaService.guardarRecetas(recetas);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Recetas insertadas exitosamente");
     }
 }

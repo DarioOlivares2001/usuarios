@@ -28,6 +28,8 @@ class WebSecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/login/**").permitAll()  // Cambiado para usar path pattern
                 .requestMatchers("/api/register/**").permitAll()
+                .requestMatchers("/api/recetas/nombres").permitAll()  // Hacer público este endpoint
+                .requestMatchers("/api/recetas/multiples").permitAll()  // Hacer público este endpoint
                 .requestMatchers("/error").permitAll()  // Permitir acceso a /error
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);  // Cambiado a addFilterBefore
