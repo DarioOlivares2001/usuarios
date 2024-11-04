@@ -3,7 +3,7 @@ spring:
     name: usuarios
 
   datasource:
-    url: jdbc:oracle:thin:@u45btx8webrcc1zi_tp?TNS_ADMIN=/wallet
+    url: jdbc:oracle:thin:@u45btx8webrcc1zi_tp?TNS_ADMIN=wallet
     username: ADMIN
     password: $Olivia$1980$
     driver-class-name: oracle.jdbc.driver.OracleDriver
