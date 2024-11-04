@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: usuarios
+
+  datasource:
+    url: jdbc:oracle:thin:@u45btx8webrcc1zi_tp?TNS_ADMIN=/wallet
+    username: ADMIN
+    password: $Olivia$1980$
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 8082
+
+logging:
+  level:
+    root: INFO
+    org:
+      hibernate: DEBUG
+      springframework: DEBUG
